@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Adrobot — кампании Keitaro</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="/" aria-label="Adrobot, главная"
+        ><span class="brand-mark" aria-hidden="true">a<span></span></span
+        ><span
+          >adrobot<span class="brand-caption">KEITARO WORKSPACE</span></span
+        ></a
+      >
+      <div class="header-right">
+        <span id="mode-badge" class="mode-badge">Подключение…</span
+        ><a class="api-link" href="/docs" target="_blank" rel="noopener"
+          >API <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">УПРАВЛЕНИЕ ТРАФИКОМ</p>
+          <h1>Кампании</h1>
+          <p class="page-description">
+            Создавайте кампании и управляйте офферами в одном месте.
+          </p>
+        </div>
+        <div class="connection-label">
+          <span class="status-dot"></span
+          ><span id="connection-label">Проверяем соединение</span>
+        </div>
+      </div>
+      <div id="demo-notice" class="notice demo-notice" hidden>
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <p>
+          <strong>Демонстрационный режим.</strong> Изменения сохраняются в
+          локальной базе. Для работы с Keitaro настройте подключение на сервере.
+        </p>
+      </div>
+      <div id="global-error" class="notice error-notice" role="alert" hidden>
+        <span class="notice-icon" aria-hidden="true">!</span>
+        <p id="global-error-text"></p>
+        <button
+          id="retry-button"
+          class="button button-small button-quiet"
+          type="button"
+        >
+          Повторить
+        </button>
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="Разделы кампаний">
+        <button
+          type="button"
+          id="tab-create"
+          class="tab active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="create-panel"
+        >
+          Создать кампанию</button
+        ><button
+          type="button"
+          id="tab-editor"
+          class="tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="editor-panel"
+        >
+          Редактор офферов
+        </button>
+      </nav>
+
+      <section
+        id="create-panel"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-create"
+      >
+        <div class="create-layout">
+          <section class="card create-card">
+            <div class="card-heading">
+              <div class="step-label">01 / НОВАЯ КАМПАНИЯ</div>
+              <h2>Основные параметры</h2>
+              <p>Одна кампания, два потока и понятная маршрутизация.</p>
+            </div>
+            <form id="create-form">
+              <fieldset id="create-fields" disabled>
+                <label class="field" for="campaign-name"
+                  ><span>Название кампании <span class="required">*</span></span
+                  ><input
+                    id="campaign-name"
+                    name="name"
+                    type="text"
+                    maxlength="200"
+                    placeholder="Например, summer_launch"
+                    autocomplete="off"
+                    required
+                  /><small
+                    >Префикс <code id="campaign-prefix">test_…_</code> будет
+                    добавлен автоматически.</small
+                  ></label
+                >
+                <div class="field-grid">
+                  <label class="field" for="country-code"
+                    ><span>Страна / GEO <span class="required">*</span></span
+                    ><input
+                      id="country-code"
+                      name="country_code"
+                      type="text"
+                      list="countries-list"
+                      placeholder="AU — Австралия"
+                      autocomplete="off"
+                      required
+                    /><small
+                      >Посетители из этой страны попадут на Google.</small
+                    ></label
+                  ><label class="field" for="create-offer"
+                    ><span>Оффер <span class="required">*</span></span
+                    ><input
+                      id="create-offer"
+                      type="text"
+                      list="offers-list"
+                      placeholder="Поиск по названию или ID"
+                      autocomplete="off"
+                      required
+                    /><small>Для остальных посетителей кампании.</small></label
+                  >
+                </div>
+                <div class="form-divider"><span>Настройки Keitaro</span></div>
+                <label class="field" for="domain-id"
+                  ><span>Домен <span class="required">*</span></span
+                  ><select id="domain-id" required>
+                    <option value="">Загрузка доменов…</option>
+                  </select></label
+                >
+                <div class="field-grid">
+                  <label class="field" for="group-id"
+                    ><span>Группа <span class="required">*</span></span
+                    ><select id="group-id" required>
+                      <option value="">Загрузка групп…</option>
+                    </select></label
+                  ><label class="field" for="traffic-source-id"
+                    ><span
+                      >Источник трафика <span class="required">*</span></span
+                    ><select id="traffic-source-id" required>
+                      <option value="">Загрузка источников…</option>
+                    </select></label
+                  >
+                </div>
+                <div
+                  id="create-error"
+                  class="inline-error"
+                  role="alert"
+                  hidden
+                ></div>
+                <div class="form-actions">
+                  <span class="required-note">* Обязательные поля</span
+                  ><button
+                    id="create-button"
+                    class="button button-primary"
+                    type="submit"
+                  >
+                    <span aria-hidden="true">+</span> Создать кампанию
+                  </button>
+                </div>
+              </fieldset>
+            </form>
+          </section>
+          <aside class="route-card">
+            <p class="eyebrow">КАК ПОЙДЁТ ТРАФИК</p>
+            <h2>Правильный маршрут.<br />Без лишних действий.</h2>
+            <div class="route-source">
+              <span class="route-icon" aria-hidden="true">↗</span>
+              <div>
+                <strong>Ссылка кампании</strong><span>Входящий трафик</span>
+              </div>
+            </div>
+            <div class="route-line" aria-hidden="true"></div>
+            <div class="route-node">
+              <span class="route-index">1</span>
+              <div>
+                <strong>Фильтр по стране</strong>
+                <p>
+                  <span id="route-country">Выбранный GEO</span> →
+                  <span id="route-google">Google</span>
+                </p>
+                <span class="pill">Первый поток</span>
+              </div>
+            </div>
+            <div class="route-line" aria-hidden="true"></div>
+            <div class="route-node">
+              <span class="route-index neutral">2</span>
+              <div>
+                <strong>Остальные посетители</strong>
+                <p id="route-offer">Выбранный оффер</p>
+                <span class="pill neutral-pill">Второй поток</span>
+              </div>
+            </div>
+            <p class="route-footnote">
+              Потоки обрабатываются по порядку: сначала проверяется страна,
+              затем применяется основной оффер.
+            </p>
+          </aside>
+        </div>
+        <section
+          id="create-success"
+          class="card success-card"
+          role="status"
+          hidden
+        >
+          <div>
+            <span class="success-icon" aria-hidden="true">✓</span>
+            <div>
+              <h2>Кампания создана</h2>
+              <p id="created-campaign-name"></p>
+              <a
+                id="created-campaign-url"
+                class="campaign-url"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              ></a>
+            </div>
+          </div>
+          <button
+            id="edit-created-button"
+            type="button"
+            class="button button-secondary"
+          >
+            Перейти к офферам <span aria-hidden="true">→</span>
+          </button>
+        </section>
+      </section>
+
+      <section
+        id="editor-panel"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-editor"
+        hidden
+      >
+        <div class="editor-layout">
+          <aside class="card campaign-sidebar">
+            <div class="sidebar-heading">
+              <h2>Ваши кампании</h2>
+              <button
+                id="refresh-campaigns"
+                class="icon-button"
+                type="button"
+                aria-label="Обновить список кампаний"
+                title="Обновить"
+              >
+                ↻
+              </button>
+            </div>
+            <label class="search-field"
+              ><span class="sr-only">Поиск кампании</span
+              ><span aria-hidden="true">⌕</span
+              ><input
+                id="campaign-search"
+                type="search"
+                placeholder="Название или ID"
+                autocomplete="off"
+            /></label>
+            <p id="campaign-count" class="list-caption">Загрузка…</p>
+            <div
+              id="campaign-list"
+              class="campaign-list"
+              aria-label="Список кампаний"
+            ></div>
+          </aside>
+          <section class="card editor-card">
+            <div id="editor-placeholder" class="empty-state">
+              <div class="empty-icon" aria-hidden="true">⇄</div>
+              <h2>Выберите кампанию</h2>
+              <p>
+                Откройте кампанию слева, чтобы посмотреть потоки и изменить
+                состав офферов.
+              </p>
+              <button
+                id="empty-create-button"
+                type="button"
+                class="button button-secondary"
+              >
+                Создать новую кампанию
+              </button>
+            </div>
+            <div id="editor-content" hidden>
+              <div class="editor-heading">
+                <div>
+                  <p class="eyebrow" id="editor-campaign-id"></p>
+                  <h2 id="editor-campaign-name"></h2>
+                  <a
+                    id="editor-campaign-url"
+                    class="campaign-url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    hidden
+                  ></a>
+                </div>
+                <button
+                  id="fetch-streams-button"
+                  type="button"
+                  class="button button-quiet button-small"
+                >
+                  Fetch streams ↻
+                </button>
+              </div>
+              <div id="draft-badge" class="draft-badge" hidden>
+                Черновик сохранён · изменения ещё не опубликованы
+              </div>
+              <div
+                id="streams-list"
+                class="stream-tabs"
+                aria-label="Потоки кампании"
+              ></div>
+              <div id="readonly-notice" class="notice readonly-notice" hidden>
+                <span class="notice-icon" aria-hidden="true">i</span>
+                <p>
+                  В этом потоке нет офферов. Его настройки сохраняются без
+                  изменений. Выберите поток с офферами.
+                </p>
+              </div>
+              <div id="offers-editor" hidden>
+                <div class="offers-heading">
+                  <div>
+                    <h3>Офферы потока</h3>
+                    <p>
+                      Закреплённые доли сохраняются. Остаток делится поровну с
+                      округлением до целых процентов.
+                    </p>
+                  </div>
+                  <span id="offers-count" class="count-badge">0</span>
+                </div>
+                <div
+                  id="stream-warning"
+                  class="notice warning-notice"
+                  role="status"
+                  hidden
+                ></div>
+                <form id="add-offer-form" class="add-offer-form">
+                  <label class="field"
+                    ><span class="sr-only">Добавить оффер</span
+                    ><input
+                      id="editor-offer"
+                      type="text"
+                      list="offers-list"
+                      placeholder="Найдите оффер по названию или ID"
+                      autocomplete="off"
+                      required /></label
+                  ><button
+                    id="add-offer-button"
+                    class="button button-secondary"
+                    type="submit"
+                  >
+                    <span aria-hidden="true">+</span> Добавить
+                  </button>
+                </form>
+                <label class="archive-toggle"
+                  ><input id="show-archive" type="checkbox" checked />
+                  Показывать архивные офферы</label
+                >
+                <div class="table-scroll">
+                  <table class="offers-table">
+                    <thead>
+                      <tr>
+                        <th>Оффер</th>
+                        <th class="number-cell">Доля, %</th>
+                        <th class="pin-cell">Закрепить</th>
+                        <th><span class="sr-only">Действия</span></th>
+                      </tr>
+                    </thead>
+                    <tbody id="offers-body"></tbody>
+                    <tfoot>
+                      <tr>
+                        <th>Всего активных</th>
+                        <td class="number-cell preview-cell" id="draft-total">
+                          100%
+                        </td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div
+                  id="editor-error"
+                  class="inline-error"
+                  role="alert"
+                  hidden
+                ></div>
+                <div
+                  id="editor-success"
+                  class="inline-success"
+                  role="status"
+                  hidden
+                ></div>
+                <div class="editor-actions">
+                  <p id="save-hint">
+                    Изменения сохраняются в черновике. Push to Keitaro применяет
+                    их в трекере.
+                  </p>
+                  <div>
+                    <button
+                      id="reset-offers-button"
+                      class="button button-quiet"
+                      type="button"
+                      disabled
+                    >
+                      Cancel</button
+                    ><button
+                      id="save-offers-button"
+                      class="button button-primary"
+                      type="button"
+                      disabled
+                    >
+                      Push to Keitaro
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span>Adrobot · Keitaro wrapper</span
+        ><span>Создание кампаний и управление офферами</span>
+      </footer>
+    </main>
+    <datalist id="offers-list"></datalist
+    ><datalist id="countries-list"></datalist>
+  </body>
+</html>
